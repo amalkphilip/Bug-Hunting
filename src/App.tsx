@@ -15,7 +15,7 @@ class OrderProcessor:
         self.inventory = {}
     
     def add_product(self, product_id, quantity, price):
-        if product_id == None:  # Bug 1: should use 'is None'
+        if product_id == None:  
             return False
         
         self.inventory[product_id] = {
@@ -36,12 +36,12 @@ class OrderProcessor:
             product_id = item['product_id']
             requested_qty = item['quantity']
             
-            if product_id not in self.inventory:  # Bug 2: should check before accessing
+            if product_id not in self.inventory:  
                 continue
             
             available_qty = self.inventory[product_id]['quantity']
             if requested_qty > available_qty:
-                requested_qty = available_qty  # Bug 3: should handle insufficient stock properly
+                requested_qty = available_qty  
             
             item_cost = requested_qty * self.inventory[product_id]['price']
             total_cost += item_cost
@@ -57,7 +57,7 @@ class OrderProcessor:
             self.inventory[product_id]['quantity'] -= requested_qty
     
         order = {
-            'order_id': len(self.orders) + 1,  # Bug 4: not thread-safe ID generation
+            'order_id': len(self.orders) + 1,  
             'customer_id': customer_id,
             'items': order_items,
             'total_cost': total_cost,
@@ -74,7 +74,7 @@ class OrderProcessor:
             if order['customer_id'] == customer_id:
                 customer_orders.append(order)
         
-        return customer_orders  # Bug 5: should return copy to prevent modification
+        return customer_orders 
     
     def calculate_discount(self, order_total, customer_type):
         discount = 0
@@ -83,12 +83,12 @@ class OrderProcessor:
         elif customer_type == 'vip':
             discount = order_total * 0.15
         
-        return order_total - discount  # Bug 6: should return discount amount, not final price
+        return order_total - discount  
     
     def save_orders_to_file(self, filename):
         try:
             with open(filename, 'w') as f:
-                json.dump(self.orders, f)  # Bug 7: datetime objects not JSON serializable
+                json.dump(self.orders, f)  
         except Exception as e:
             print(f"Error saving orders: {e}")
             return False
@@ -114,9 +114,9 @@ import java.math.BigDecimal;
 
 public class BankAccount {
     private String accountNumber;
-    private BigDecimal balance;  // Bug 1: not volatile for thread safety
+    private BigDecimal balance;  
     private List<String> transactionHistory;
-    private static int nextAccountNumber = 1000;  // Bug 2: not thread-safe
+    private static int nextAccountNumber = 1000;  
     
     public BankAccount(String customerName, BigDecimal initialBalance) {
         this.accountNumber = String.valueOf(nextAccountNumber++);
@@ -129,7 +129,7 @@ public class BankAccount {
             return false;
         }
         
-        if (balance.compareTo(amount) >= 0) {  // Bug 3: race condition in balance check
+        if (balance.compareTo(amount) >= 0) {  
             balance = balance.subtract(amount);
             transactionHistory.add("WITHDRAW: " + amount);
             return true;
@@ -140,21 +140,21 @@ public class BankAccount {
     
     public void deposit(BigDecimal amount) {
         if (amount.compareTo(BigDecimal.ZERO) > 0) {
-            balance = balance.add(amount);  // Bug 4: not atomic operation
+            balance = balance.add(amount);  
             transactionHistory.add("DEPOSIT: " + amount);
         }
     }
     
     public BigDecimal getBalance() {
-        return balance;  // Bug 5: should return copy to prevent external modification
+        return balance;  
     }
     
     public List<String> getTransactionHistory() {
-        return transactionHistory;  // Bug 6: returns mutable reference
+        return transactionHistory;  
     }
     
     public boolean transfer(BankAccount targetAccount, BigDecimal amount) {
-        if (this.withdraw(amount)) {  // Bug 7: potential deadlock with concurrent transfers
+        if (this.withdraw(amount)) {  
             targetAccount.deposit(amount);
             return true;
         }
@@ -162,7 +162,7 @@ public class BankAccount {
     }
     
     public void saveAccountData(String filename) throws IOException {
-        FileWriter writer = new FileWriter(filename);  // Bug 8: resource not closed properly
+        FileWriter writer = new FileWriter(filename);  
         writer.write("Account: " + accountNumber + "\\n");
         writer.write("Balance: " + balance + "\\n");
         
@@ -185,7 +185,7 @@ public class BankAccount {
             });
         }
         
-        executor.shutdown();  // Bug 9: doesn't wait for tasks to complete
+        executor.shutdown();  
         System.out.println("Final balance: " + account1.getBalance());
     }
 }`,
@@ -217,13 +217,13 @@ typedef struct {
 } Student;
 
 Student* create_student(int id, const char* name, int score_count) {
-    Student* student = malloc(sizeof(Student));  // Bug 1: no null check
+    Student* student = malloc(sizeof(Student));  
     
     student->id = id;
-    student->name = malloc(strlen(name) + 1);  // Bug 2: no null check
+    student->name = malloc(strlen(name) + 1);  
     strcpy(student->name, name);
     
-    student->scores = malloc(score_count * sizeof(int));  // Bug 3: no null check
+    student->scores = malloc(score_count * sizeof(int));  
     student->score_count = score_count;
     
     return student;
@@ -234,7 +234,7 @@ void add_score(Student* student, int index, int score) {
     
     if (index >= 0 && index < student->score_count) {
         student->scores[index] = score;
-    }  // Bug 4: no handling for invalid index
+    }  
 }
 
 double calculate_average(Student* student) {
@@ -244,16 +244,16 @@ double calculate_average(Student* student) {
     
     int sum = 0;
     for (int i = 0; i < student->score_count; i++) {
-        sum += student->scores[i];  // Bug 5: potential use of uninitialized values
+        sum += student->scores[i];  
     }
     
-    return sum / student->score_count;  // Bug 6: integer division instead of float
+    return sum / student->score_count;  
 }
 
 char* get_student_info(Student* student) {
     if (student == NULL) return NULL;
     
-    char* info = malloc(256);  // Bug 7: fixed size, potential overflow
+    char* info = malloc(256);  
     sprintf(info, "ID: %d, Name: %s, Average: %.2f", 
             student->id, student->name, calculate_average(student));
     
@@ -264,7 +264,7 @@ void free_student(Student* student) {
     if (student != NULL) {
         free(student->name);
         free(student->scores);
-        free(student);  // Bug 8: should set pointer to NULL after freeing
+        free(student); 
     }
 }
 
@@ -272,10 +272,10 @@ Student** create_class(int class_size) {
     Student** students = malloc(class_size * sizeof(Student*));
     
     for (int i = 0; i < class_size; i++) {
-        students[i] = NULL;  // Initialize to NULL
+        students[i] = NULL;  
     }
     
-    return students;  // Bug 9: no null check for malloc
+    return students; 
 }
 
 void print_class_report(Student** students, int class_size) {
@@ -286,7 +286,7 @@ void print_class_report(Student** students, int class_size) {
         if (students[i] != NULL) {
             char* info = get_student_info(students[i]);
             printf("%s\\n", info);
-            // Bug 10: memory leak - info not freed
+           
         }
     }
 }
@@ -320,7 +320,7 @@ int main() {
 
 int count_words(char* text) {
     int count = 0;
-    char* token = strtok(text, " ");  // Bug 3: modifies original string
+    char* token = strtok(text, " ");  
     
     while (token != NULL) {
         count++;
@@ -336,9 +336,9 @@ int main() {
     
     printf("Original: %s\\n", input);
     printf("Reversed: %s\\n", reversed);
-    printf("Word count: %d\\n", count_words(input));  // Bug 4: input modified by strtok
+    printf("Word count: %d\\n", count_words(input)); 
     
-    return 0;  // Bug 5: memory leak - reversed not freed
+    return 0;  
 }`,
     bugs: [
       { line: 11, description: "Should check if malloc returns NULL before using student pointer" },
